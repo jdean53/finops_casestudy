@@ -7,9 +7,6 @@ import pulp
 from pulp import *
 
 
-
-
-
 '''
 PORTFOLIO ALLOCATION
 '''
@@ -19,12 +16,12 @@ def gen_bond(tenor, coupon, price):
     Generates a dictionary representing the cashflows of a bond  
     ---
     Parameters:  
-    tenor (int): periods of interest until maturity of the bond  
-    coupon (float): coupon payment of bond  
-    price (float): price of the bond  
+        tenor (int): periods of interest until maturity of the bond  
+        coupon (float): coupon payment of bond  
+        price (float): price of the bond  
     ---
     Returns:  
-    bond (dict): dictionary showing bond cashflows by period
+        bond (dict): dictionary showing bond cashflows by period
     '''
     cfs = []
     cfs.append(-price)
@@ -39,10 +36,10 @@ def bond_names(bond_count):
     Generates list of bond names as strings formatted for LaTeX in Markdown  
     ---
     Parameters:  
-    bond_count (int): number of bonds in list
+        bond_count (int): number of bonds in list
     ---
     Returns:  
-    names (list): list of bonds names as strings formatted for LaTeX math-mode
+        names (list): list of bonds names as strings formatted for LaTeX math-mode
     '''
     names = []
     for i in range(1,bond_count+1):
@@ -54,15 +51,17 @@ def bond_data(tenors, prices, coupons):
     Generates a DataFrame of the bond cashflows over time  
     ---
     Parameters:  
-    tenors (list): List of bond tenors (ints)  
-    prices (list): List of bond priuces (floats)  
-    coupons (list): List of bond coupons (floats)
+        tenors (list): List of bond tenors (ints)  
+        prices (list): List of bond priuces (floats)  
+        coupons (list): List of bond coupons (floats)
     ---
     Returns:  
     df (DataFrame): DataFrame of bond cashflows
         x - cash flow years  
         y - bond names (formatted for LaTeX)
     '''
+    import pandas as pd
+    import numpy as np
     if len(tenors) == len(prices) == len(coupons):
         bond_count = len(tenors)
         bond_data = []
@@ -79,11 +78,12 @@ def pv_factors(rates):
     Calculates Present Value Factors for given term structure of interest rates  
     ---
     Parameters:  
-    rates (list): given term structure (float)  
+        rates (list): given term structure (float)  
     ---
     Returns:  
-    pv (np array): PV Factors  
+        pv (np array): PV Factors  
     '''
+    import numpy as np
     pv = []
     for i in range(len(rates)):
         pv.append(1/(1+rates[i])**i)
@@ -94,11 +94,12 @@ def dur_factors(rates):
     Calculates Duration Factors for given term structure of interest rates  
     ---
     Parameters:  
-    rates (list): given term structure (float)  
+        rates (list): given term structure (float)  
     ---
     Returns:  
-    dur (np array): Duration Factors  
+        dur (np array): Duration Factors  
     '''
+    import numpy as np
     dur = []
     for i in range(len(rates)):
         dur.append(i/(1+rates[i])**(i+1))
@@ -109,11 +110,12 @@ def conv_factors(rates):
     Calculates Convexity Factors for given term structure of interest rates  
     ---
     Parameters:  
-    rates (list): given term structure (float)  
+        rates (list): given term structure (float)  
     ---
     Returns:  
-    conv (np array): Convexity Factors  
+        conv (np array): Convexity Factors  
     '''
+    import numpy as np
     conv = []
     for i in range(len(rates)):
         conv.append((i*(i+1))/(1+rates[i])**(i+2))
@@ -124,18 +126,22 @@ def allocate_portfolio(liabilities, bonds_df, rates, r=0, immunization=False, du
     Allocates Bond Portfolio by minimizing initial portfolio value subject to constraints (manipulatable)  
     ---
     Parameters:  
-    liabilities (list): liability stream portfolio must cover (float)  
-    bonds_df (DataFrame): bond data  
-    r (float): interest rate on cash carry (default 0)  
-    rates (list): current term structure of interest rates (float)  
-    immunization (bool): solve the portfolio using present value immunized cashflows (default False)  
-    duration (bool): solve the portfolio using duration immunized cashflows (default False)
-    convexity (bool): adds convexity constraint to immunization solve (default False)  
-    dedicated years (int): years dedicated to cashflow for immunized solve (default 0 in immunization)
+        liabilities (list): liability stream portfolio must cover (float)  
+        bonds_df (DataFrame): bond data  
+        r (float): interest rate on cash carry (default 0)  
+        rates (list): current term structure of interest rates (float)  
+        immunization (bool): solve the portfolio using present value immunized cashflows (default False)  
+        duration (bool): solve the portfolio using duration immunized cashflows (default False)
+        convexity (bool): adds convexity constraint to immunization solve (default False)  
+        dedicated years (int): years dedicated to cashflow for immunized solve (default 0 in immunization)
     ---
     Returns:  
-    Portfolio (LpProblem): Linear Program to be solved
+        Portfolio (LpProblem): Linear Program to be solved
     '''
+    import pandas as pd
+    import numpy as np
+    import pulp
+    from pulp import *
 
     '''Problem Type and Set Up'''
     bonds = bonds_df.columns
@@ -185,13 +191,17 @@ def solve_portfolio(portfolio, bonds_df):
     Solves a Given PuLP Optimization Program and Outputs the Optimal Solution, Variable Allocation, and Sensitivity Information  
     ---
     Parameters:  
-    problem (LpProblem) - Formulated LP   
-    df (DataFrame) - Problem DataFrame  
+        problem (LpProblem) - Formulated LP   
+        df (DataFrame) - Problem DataFrame  
     ---
     Returns:  
-    final_dec (DataFrame) - Decision Variable Final Values  
-    sp_df (DataFrame) - Shadow Prices  
+        final_dec (DataFrame) - Decision Variable Final Values  
+        sp_df (DataFrame) - Shadow Prices  
     '''
+    import pandas as pd
+    import numpy as np
+    import pulp
+    from pulp import *
 
     '''Solves portfolio'''
     portfolio.solve()
@@ -223,11 +233,12 @@ def derive_term_structure(sp_df):
     Derives implied term structure of interest rates given portfolio dedication shadow prices  
     ---
     Parameters:  
-    sp_df (DataFrame): shadow price dataframe  
+        sp_df (DataFrame): shadow price dataframe  
     ---
     Returns:  
-    implied Rates (list): implied term structure of interest rates indexed from 0, list of floats
+        implied Rates (list): implied term structure of interest rates indexed from 0, list of floats
     '''
+    import pandas as pd
     shadow_prices = sp_df['shadow_price'].to_list()
     implied_rates = [0]
     
@@ -246,11 +257,13 @@ def downside_semi_variance(data):
     Returns the Downside Semi Variance of the Data Set  
     ---  
     Parameters:  
-    data - (np array) Data array to calculate the dsv  
+        data - (np array) Data array to calculate the dsv  
     ---  
     Returns:  
-    dsv - (float) Downside Semi Variance
+        dsv - (float) Downside Semi Variance
     '''
+    import pandas as pd
+    import numpy as np
     vals = np.where(data - np.mean(data) < 0, data - np.mean(data), 0)
     dsv = (1/len(data))*np.sum(np.square(vals))
     return dsv
@@ -260,11 +273,11 @@ def positive_semi_definite(A, print_result=True):
     Tests if the Matrix A is positive semidefinite  
     ---
     Parameters:  
-    A - (matrix-like) Square matrix to be tests  
-    print_result - (bool) Prints result for presentation (default True)
+        A - (matrix-like) Square matrix to be tests  
+        print_result - (bool) Prints result for presentation (default True)
     ---
     Returns:  
-    psd - (bool) True if PSD, else false [ONLY RETURNS WHEN print_result=False]
+        psd - (bool) True if PSD, else false [ONLY RETURNS WHEN print_result=False]
     '''
     import numpy.linalg as npl
     eigen = npl.eig(A)[0] >= 0
