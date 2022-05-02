@@ -141,7 +141,6 @@ def allocate_portfolio(liabilities, bonds_df, rates, r=0, immunization=False, du
     import pandas as pd
     import numpy as np
     import pulp
-    from pulp import *
 
     '''Problem Type and Set Up'''
     bonds = bonds_df.columns
@@ -201,7 +200,6 @@ def solve_portfolio(portfolio, bonds_df):
     import pandas as pd
     import numpy as np
     import pulp
-    from pulp import *
 
     '''Solves portfolio'''
     portfolio.solve()
