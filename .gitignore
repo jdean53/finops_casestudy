@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# our files to ignore
+sandbox.ipynb
+
 # C extensions
 *.so
 
