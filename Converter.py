@@ -18,8 +18,8 @@ exporter.register_preprocessor(TagRemovePreprocessor(config=c),True)
 # Configure and run our exporter - returns a tuple - first element with html,
 # second with notebook metadata
 output = PDFExporter(config=c).from_filename(
-        "C:\MFE\MFE Sem 2\GBUS 421\Project\Pairs Trading Fixed Income ETFs Utilizing the Hurst Exponent.ipynb")
+        r"C:\MFE\Github\finops_casestudy\bond_project.ipynb")
 
 # Write to output html file
-with open("C:\MFE\MFE Sem 2\GBUS 421\Project\Pairs Trading Fixed Income ETFs Utilizing the Hurst Exponent.pdf",  "wb") as f:
+with open(r"C:\MFE\Github\finops_casestudy\bond_project.pdf",  "wb") as f:
     f.write(output[0])
