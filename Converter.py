@@ -21,5 +21,5 @@ output = PDFExporter(config=c).from_filename(
         r"C:\MFE\Github\finops_casestudy\bond_project.ipynb")
 
 # Write to output html file
-with open(r"C:\MFE\Github\finops_casestudy\bond_project.pdf",  "wb") as f:
+with open(r"C:\MFE\Github\finops_casestudy\bond_project.pd",  "wb") as f:
     f.write(output[0])
